@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP3</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            text-align: center;
+            background: rgb(169 29 93);
+        }
+        input {
+            outline: none;
+            margin-top: 20px;
+        }
+        input::placeholder {
+            text-align: center;
+            color: white
+        }
+        h1 {
+            margin-top: 30px;
+        }
+        #result {
+            margin-top: 30px;
+        }
+        .shift {
+            margin: 20px;
+        }
+        img {
+            border-radius: 50%;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ã24</h1>
+    <center><small><h5>Asiwaju MP3</h5></small></center>
+    <input type="text" id="songInput" placeholder="Enter Song Title:">
+    <button onclick="searchSongs()">Search Songs</button>
+
+    <div id="result"></div>
+
+    <script>
+        function searchSongs() {
+            const songTitle = document.getElementById('songInput').value;
+
+            if (!songTitle) {
+                alert('Please enter a song title.');
+                return;
+            }
+
+            const searchUrl = `https://api.deezer.com/search?q=${encodeURIComponent(songTitle)}`;
+
+            fetch(searchUrl)
+                .then(response => response.json())
+                .then(data => {
+                    displaySongs(data.data);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        }
+
+        function displaySongs(songs) {
+            const resultDiv = document.getElementById('result');
+
+            if (songs.length > 0) {
+                resultDiv.innerHTML = '<h2 class="shift">Search Results:</h2>';
+                songs.forEach(song => {
+                    const songElement = document.createElement('div');
+                    songElement.innerHTML = `
+                        <div>
+                            <p>${song.title} by ${song.artist.name}</p>
+                            <img src="${song.album.cover_medium}" alt="${song.title} cover">
+                            <audio id="${song.id}" controls>
+                                <source src="${song.preview}" type="audio/mp3">
+                                Your browser does not support the audio element.
+                            </audio>
+                            <hr>
+                        </div>
+                    `;
+                    resultDiv.appendChild(songElement);
+
+                    const audio = songElement.querySelector('audio');
+                    audio.addEventListener('play', function() {
+                        pauseOtherPlayers(audio.id);
+                    });
+                });
+            } else {
+                resultDiv.innerHTML = '<p>No results found.</p>';
+            }
+        }
+
+        function pauseOtherPlayers(currentId) {
+            const audios = document.querySelectorAll('audio');
+            audios.forEach(audio => {
+                if (audio.id !== currentId && !audio.paused) {
+                    audio.pause();
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
